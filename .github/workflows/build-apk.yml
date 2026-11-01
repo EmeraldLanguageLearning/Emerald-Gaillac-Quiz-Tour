@@ -11,6 +11,8 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.7' }
+      - name: Use the site's index.html as the app content
+        run: cp index.html app/src/main/assets/index.html
       - run: gradle assembleDebug
       - uses: actions/upload-artifact@v4
         with:
