@@ -187,7 +187,7 @@ const SQ_LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPsAAAEBCAMAAACJ0
 /* ---- Quiz content (same tour as index.html) ----
    In the two-team version the letters come from the rebus puzzles, not from these questions. */
 const STOPS = [
-  { dest:{title:"Your first destination", clue:"Named after seafood, your first destination was a place of great commerce. In English it's pronounced “key”.", hint:"A view you can see", img:"s2"},
+  { dest:{clueLater:"Named after seafood, your next destination was a place of great commerce. In English it's pronounced “key”.", clue:"Named after seafood, your first destination was a place of great commerce. In English it's pronounced “key”.", hint:"A view you can see", img:"s2"},
     q:{text:"For whom was the town cleaned up and embellished in 1533?", img:"s3"},
     ch:{text:"Do a 10 second “portefaix” mannequin challenge and take a photo."} },
   { dest:{title:"Second destination", clue:"“Pray and Work” was the motto of your next destination. On a hill, overlooking the Tarn river, the inhabitants of this place developed the local wine trade. You can go here to feel closer to heaven.", img:"s5"},
@@ -200,7 +200,7 @@ const STOPS = [
   { dest:{title:"Fourth destination", clue:"Turn around and walk towards Rue Cabrol. You'll find yourself in the oldest district in France.", img:"s12"},
     q:{text:"Look above and keep your eyes open, I am a source of light that gets people awoken. What am I?", img:"s13"},
     ch:{text:"Find an “hourdis” (bottom of a timber-framed floor of a house) and, from below, take a group photo.", img:"s14"} },
-  { dest:{title:"Fifth destination", clue:"Your next destination was witness to religious wars and other conflictual happenings. Once a small marketplace, it is now mainly for cars. A fountain you will find here, not very far.", img:"s15"},
+  { dest:{clueFirst:"Your first destination was witness to religious wars and other conflictual happenings. Once a small marketplace, it is now mainly for cars. A fountain you will find here, not very far.", clue:"Your next destination was witness to religious wars and other conflictual happenings. Once a small marketplace, it is now mainly for cars. A fountain you will find here, not very far.", img:"s15"},
     q:{text:"Why was wine made indoors? To avoid …………… and regulations.", img:"s16", placeholder:"Type the missing word…"},
     ch:{text:"Find the corner-face and take a group selfie with it.", hint:"A bit like this", img:"s17"} },
   { dest:{title:"Sixth destination", clue:"Your next destination is higher than the rest, above the roofs and your head. Look up and you'll see this old brick tower.", img:"s18"},
@@ -267,8 +267,8 @@ const REBUS = {
               hint:'Two changes: one letter swapped, one letter removed. It is what a liberation brings.'}
 };
 const TEAMS = {
-  '1':{name:'Team 1', rebus:['keyhole','abbey','lighthouse','tower','peace']},
-  '2':{name:'Team 2', rebus:['rainbow','sunflower','fountain','doorbell','freedom']}
+  '1':{name:'Team 1', route:[0,1,2,3,4,5,6,7,8,9], rebus:['keyhole','abbey','lighthouse','tower','peace']},
+  '2':{name:'Team 2', route:[4,5,6,7,0,1,2,3,8,9], rebus:['rainbow','sunflower','fountain','doorbell','freedom']}
 };
 const FINAL_WORD='LIBERATION';
 
@@ -303,9 +303,9 @@ function mapSVG(leg){
   let g=`<svg viewBox="0 0 ${W} ${H}" class="tourmap" role="img" aria-label="Tour map">`;
   g+=`<rect width="${W}" height="${H}" fill="#F5F5F5"/><image href="${IMG.basemap}" x="0" y="0" width="${W}" height="${GEO.imgH}"/>`;
   g+=`<rect x="1" y="1" width="${W-2}" height="${H-2}" fill="none" stroke="#DADADA" stroke-width="2"/>`;
-  const all=COORDS.map((_,i)=>pt(i).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const all=ORDER.filter(i=>i<9).map(i=>pt(i).map(v=>v.toFixed(1)).join(',')).join(' ');
   g+=`<polyline points="${all}" fill="none" stroke="#457865" stroke-opacity=".55" stroke-width="4" stroke-dasharray="3 12" stroke-linecap="round"/>`;
-  if(leg!==null){const a=pt(leg),b=pt(leg+1);
+  if(leg!==null){const a=pt(leg),b=pt(nextOf(leg));
     g+=`<defs><marker id="ar${leg}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#49B190"/></marker></defs>`;
     const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,k=34/L;
     g+=`<line x1="${a[0]+dx*k}" y1="${a[1]+dy*k}" x2="${b[0]-dx*k}" y2="${b[1]-dy*k}" stroke="#fff" stroke-width="14" stroke-linecap="round"/>`+
@@ -316,18 +316,18 @@ function mapSVG(leg){
      `<path d="M${sp[0]-7} ${sp[1]+11}V${sp[1]-11}l15 6-15 6" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>`+
      `<text x="${sp[0]-30}" y="${sp[1]+8}" text-anchor="end" font-family="Open Sans,sans-serif" font-size="22" font-weight="700" fill="#457865" ${halo}>Start · Tourist office</text></a>`;
   COORDS.forEach((c,i)=>{const [x,y]=pt(i);
-    const hot=leg!==null&&(i===leg||i===leg+1), on=leg===null?visited(i):hot, dim=leg!==null&&!hot;
-    g+=`<a href="${placeUrl(c)}" target="_blank" rel="noopener"><title>Stop ${i+1} (${fmtC(c)}) – open in Google Maps</title><g opacity="${dim?.5:1}">`+
+    const hot=leg!==null&&(i===leg||i===nextOf(leg)), on=leg===null?visited(i):hot, dim=leg!==null&&!hot;
+    g+=`<a href="${placeUrl(c)}" target="_blank" rel="noopener"><title>Stop ${pos(i)+1} (${fmtC(c)}) – open in Google Maps</title><g opacity="${dim?.5:1}">`+
        `<circle cx="${x}" cy="${y}" r="${hot?28:24}" fill="${on?'#49B190':'#fff'}" stroke="${on?'#fff':'#457865'}" stroke-width="4"/>`+
-       `<text x="${x}" y="${y+8.5}" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="700" font-size="24" fill="${on?'#fff':'#457865'}">${i+1}</text></g></a>`;});
+       `<text x="${x}" y="${y+8.5}" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="700" font-size="24" fill="${on?'#fff':'#457865'}">${pos(i)+1}</text></g></a>`;});
   g+=`<g transform="translate(${W-40},50)"><path d="M0 -26L11 10L0 3L-11 10z" fill="#457865" stroke="#fff" stroke-width="3" paint-order="stroke"/><text y="34" text-anchor="middle" font-family="Open Sans" font-weight="700" font-size="20" fill="#457865" ${halo}>N</text></g>`;
   g+=`<g transform="translate(24,${H-22})"><line x1="0" y1="0" x2="${px100}" y2="0" stroke="#457865" stroke-width="4"/><line x1="0" y1="-8" x2="0" y2="8" stroke="#457865" stroke-width="4"/><line x1="${px100}" y1="-8" x2="${px100}" y2="8" stroke="#457865" stroke-width="4"/><text x="${px100/2}" y="-12" text-anchor="middle" font-family="Open Sans" font-weight="600" font-size="20" fill="#457865" ${halo}>100 m</text></g>`;
   g+=`<text x="${W-12}" y="${H-12}" text-anchor="end" font-family="Open Sans" font-size="16" fill="#777" ${halo}>Map data © Google</text>`;
   return g+'</svg>';
 }
 function destLost(i){
-  const open=!!(state.destRevealed||{})[i] || (i>0 && (!!state.done[i-1] || !!(state.revealed||{})[i-1]));
-  return open?coordLink(COORDS[i],'Stop '+(i+1))
+  const open=!!(state.destRevealed||{})[i] || (pos(i)>0 && (!!state.done[prevOf(i)] || !!(state.revealed||{})[prevOf(i)]));
+  return open?coordLink(COORDS[i],'Stop '+(pos(i)+1))
     :`<div class="challenge-actions"><button class="btn outline" data-dest-reveal="${i}">We're stuck – show us where</button></div>`;
 }
 function coordLink(c,label){return `<p class="coords"><a href="${placeUrl(c)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>${label} · ${fmtC(c)} · Open in Google Maps</a></p>`;}
@@ -367,7 +367,11 @@ function targetIndex(str,rule){
   return -1;
 }
 const TEAM=TEAMS[state.team]||null;
-const MY=TEAM?TEAM.rebus:[];
+/* Each team walks the loop in the same direction but starts half a loop apart (Team 1 at the quay, Team 2 at the old marketplace),
+   so the teams don't cross paths; both finish together at the final destination (stop index 8, then Q10 = index 9). */
+const ORDER=TEAM?TEAM.route:[0,1,2,3,4,5,6,7,8,9];
+const pos=i=>ORDER.indexOf(+i), nextOf=i=>ORDER[pos(i)+1], prevOf=i=>ORDER[pos(i)-1];
+const MY=TEAM?TEAM.rebus.slice().sort((a,b)=>pos(REBUS[a].stop)-pos(REBUS[b].stop)):[];
 const rebusAt=i=>MY.filter(id=>REBUS[id].stop===i);
 const solved=id=>norm(state.rebus[id]||'')===norm(REBUS[id].answer);
 /* a team only gets a rebus letter once the rebus is solved correctly */
@@ -393,7 +397,7 @@ function renderRebus(id){
 }
 
 /* ---- Build tabs & panels ---- */
-const tabs=[{id:'start',label:'Start'}].concat(TEAM?STOPS.map((_,i)=>({id:'q'+i,label:'Q'+(i+1),rb:rebusAt(i).length})):[]).concat(TEAM?[{id:'code',label:'Code'}]:[]);
+const tabs=[{id:'start',label:'Start'}].concat(TEAM?ORDER.map((i,k)=>({id:'q'+i,label:'Q'+(k+1),rb:rebusAt(i).length})):[]).concat(TEAM?[{id:'code',label:'Code'}]:[]);
 const tabsEl=document.getElementById('tabs'), main=document.getElementById('main');
 
 function fig(img){return img&&IMG[img]?`<figure><img src="${IMG[img]}" alt="" loading="lazy"></figure>`:'';}
@@ -410,7 +414,7 @@ function startPanel(){
     </div><p style="text-align:center" class="mapnote">Each team uses its own phone or tablet. Pick the right team: each one has different puzzles.</p>`;
   return head+`
   <div class="card"><div class="badge">${ICONS.team}</div><div class="kicker">You are playing as</div><h3>${TEAM.name}</h3>
-    <p>Your rebus puzzles are at stops ${MY.map(id=>REBUS[id].stop+1).join(', ')}.</p>
+    <p>Your team follows its own route, so you won't meet the other team until the end. Your rebus puzzles are at stops ${MY.map(id=>pos(REBUS[id].stop)+1).join(', ')}.</p>
     <div class="challenge-actions"><button class="btn outline" id="switchTeam">Wrong team? Switch</button></div></div>
   <div class="howto">
     <div class="card"><div class="badge">${ICONS.walk}</div><h3>Find the place</h3><p>Read the riddle and walk to the destination.</p></div>
@@ -423,17 +427,17 @@ function startPanel(){
     <div class="challenge-actions"><a class="btn outline" href="${dirUrl(START)}" target="_blank" rel="noopener">Directions to the start</a></div>
     <div class="mapwrap" id="map-start"></div>
     <p class="mapnote">Stops you have visited turn green. Tap any dot to open it in Google Maps.</p></div>
-  <div style="text-align:center"><button class="btn" data-go="q0">Start the tour</button></div>`;}
+  <div style="text-align:center"><button class="btn" data-go="q${ORDER[0]}">Start the tour</button></div>`;}
 
 function routeCard(i){
   if(i===8) return `<div class="card"><div class="badge">${ICONS.route}</div><div class="kicker">Next</div><h3>Stay where you are</h3><p>Question 10 is right here at the final destination.</p></div>`;
   if(i===9) return `<div class="card"><div class="badge">${ICONS.route}</div><div class="kicker">Finish</div><h3>You're back where you started!</h3><p>Find the other team, then open the Code tab to put your letters together.</p></div>`;
-  const d=Math.round(metres(COORDS[i],COORDS[i+1])/10)*10, open=!!state.done[i]||!!(state.revealed||{})[i];
-  return `<div class="card route" id="route${i}"><div class="badge">${ICONS.route}</div><div class="kicker">The way to stop ${i+2}</div>
+  const nx=nextOf(i), d=Math.round(metres(COORDS[i],COORDS[nx])/10)*10, open=!!state.done[i]||!!(state.revealed||{})[i];
+  return `<div class="card route" id="route${i}"><div class="badge">${ICONS.route}</div><div class="kicker">The way to stop ${pos(nx)+1}</div>
     <h3>${open?'Head to your next destination':'Finish the challenge to see the way'}</h3>
     ${open?`<div class="mapwrap">${mapSVG(i)}</div>
       <p>About <b>${d} m</b> as the crow flies.</p>
-      <div class="challenge-actions"><a class="btn" href="${dirUrl(COORDS[i+1])}" target="_blank" rel="noopener">Walking directions in Google Maps</a></div>
+      <div class="challenge-actions"><a class="btn" href="${dirUrl(COORDS[nx])}" target="_blank" rel="noopener">Walking directions in Google Maps</a></div>
       <p class="mapnote">Directions start from your phone's current location.</p>`
     :`<p>Read the next riddle first – if you're really stuck, you can peek.</p>
       <div class="challenge-actions"><button class="btn outline" data-reveal="${i}">We're stuck – show the way</button></div>`}</div>`;
@@ -452,17 +456,18 @@ function rebusCard(id){
 
 function stopPanel(s,i){
   const q=s.q, d=s.dest;
-  let h=`<h2 class="section">Stop ${i+1}</h2>`;
-  if(d) h+=`<div class="card"><div class="badge">${ICONS.pin}</div><div class="kicker">Destination</div><h3>${esc(d.title)}</h3>
-      <p class="clue">${esc(d.clue)}</p>${d.hint?`<p class="hint">Hint: ${esc(d.hint)}</p>`:''}${fig(d.img)}
+  const n=pos(i)+1, ORD=["first","second","third","fourth","fifth","sixth","seventh","eighth"];
+  let h=`<h2 class="section">Stop ${n}</h2>`;
+  if(d) h+=`<div class="card"><div class="badge">${ICONS.pin}</div><div class="kicker">Destination</div><h3>${n===1?'Your first destination':n===9?'Final destination':ORD[n-1][0].toUpperCase()+ORD[n-1].slice(1)+' destination'}</h3>
+      <p class="clue">${esc(n===1?(d.clueFirst||d.clue):(d.clueLater||d.clue))}</p>${d.hint?`<p class="hint">Hint: ${esc(d.hint)}</p>`:''}${fig(d.img)}
       <div id="dl${i}">${destLost(i)}</div></div>`;
   else h+=`<p style="text-align:center;font-style:italic">You're still at the final destination.</p><div style="text-align:center">${coordLink(COORDS[8],'Final destination')}</div>`;
-  h+=`<div class="card"><div class="badge">${ICONS.q}</div><div class="kicker">Question ${i+1}</div><h3>${esc(q.text)}</h3>${fig(q.img)}
+  h+=`<div class="card"><div class="badge">${ICONS.q}</div><div class="kicker">Question ${n}</div><h3>${esc(q.text)}</h3>${fig(q.img)}
       <div class="answer-row"><input id="in${i}" data-i="${i}" placeholder="${esc(q.placeholder||'Type your answer…')}" autocomplete="off" value="${esc(state.answers[i]||'')}"></div></div>`;
   h+=rebusAt(i).map(rebusCard).join('');
   if(s.bonus) h+=`<div class="card"><div class="badge">${ICONS.star}</div><div class="kicker">Bonus question</div><h3>${esc(s.bonus.text)}</h3>
       <div class="answer-row"><input id="bonusIn" placeholder="Type your answer…" autocomplete="off" value="${esc(state.bonus||'')}"></div></div>`;
-  h+=`<div class="card"><div class="badge">${ICONS.cam}</div><div class="kicker">Challenge ${i+1}</div><h3>${esc(s.ch.text)}</h3>
+  h+=`<div class="card"><div class="badge">${ICONS.cam}</div><div class="kicker">Challenge ${n}</div><h3>${esc(s.ch.text)}</h3>
       ${s.ch.hint?`<p class="hint">Hint: ${esc(s.ch.hint)}</p>`:''}${fig(s.ch.img)}
       <div class="challenge-actions">
         <label class="btn outline">${ICONS.cam.replace('<svg','<svg style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"')} Add photo
@@ -498,7 +503,7 @@ tabs.forEach((t,k)=>{
   b.innerHTML=t.label+(t.rb?'<span class="rb" title="Rebus at this stop">✦</span>':'')+(t.id.startsWith('q')?'<span class="dot"></span>':''); tabsEl.appendChild(b);
   const p=document.createElement('section'); p.className='panel'; p.id='p-'+t.id; p.setAttribute('role','tabpanel');
   const prev=tabs[k-1], next=tabs[k+1];
-  p.innerHTML=(t.id==='start'?startPanel():t.id==='code'?codePanel():stopPanel(STOPS[k-1],k-1))+
+  p.innerHTML=(t.id==='start'?startPanel():t.id==='code'?codePanel():stopPanel(STOPS[ORDER[k-1]],ORDER[k-1]))+
     `<div class="pager"><button class="btn outline" data-go="${prev?prev.id:''}" ${prev?'':'hidden'}>← ${prev?prev.label:''}</button>
      <button class="btn" data-go="${next?next.id:''}" ${next?'':'hidden'}>${next?next.label:''} →</button></div>`;
   main.appendChild(p);
@@ -542,7 +547,7 @@ function renderMine(){
   const have=MY.filter(solved).length;
   document.getElementById('myCount').textContent=`${have} of 5 rebus solved`;
   document.getElementById('myLetters').innerHTML=MY.map((id,k)=>{const L=letterOf(id);
-    return `<div class="tile ${L?'filled':'missing'}"><b>${L||'?'}</b><small>Stop ${REBUS[id].stop+1}</small></div>`;}).join('');
+    return `<div class="tile ${L?'filled':'missing'}"><b>${L||'?'}</b><small>Stop ${pos(REBUS[id].stop)+1}</small></div>`;}).join('');
   const fb=document.getElementById('otherFb'), oth=state.other.map(v=>(v||'').trim().toUpperCase());
   if(oth.every(Boolean)&&have===5){
     const ok=sortL(MY.map(letterOf).concat(oth))===sortL(FINAL_WORD.split(''));
@@ -578,7 +583,7 @@ function renderCode(){
   renderMine(); renderAnagram();
   const ans=STOPS.filter((_,i)=>(state.answers[i]||'').trim()).length, ch=STOPS.filter((_,i)=>state.done[i]).length, rb=MY.filter(solved).length;
   document.getElementById('stats').innerHTML=`<div><b>${ans}/10</b>questions</div><div><b>${rb}/5</b>rebus</div><div><b>${state.bonus.trim()?'✓':'–'}</b>bonus</div><div><b>${ch}/10</b>challenges</div>`;
-  const g=Object.entries(photos).flatMap(([i,arr])=>arr.map(u=>`<figure><img src="${u}" alt="Challenge ${+i+1} photo"><figcaption>Challenge ${+i+1}</figcaption></figure>`)).join('');
+  const g=Object.entries(photos).flatMap(([i,arr])=>arr.map(u=>`<figure><img src="${u}" alt="Challenge ${pos(i)+1} photo"><figcaption>Challenge ${pos(i)+1}</figcaption></figure>`)).join('');
   document.getElementById('map-code').innerHTML=mapSVG(null);
   document.getElementById('gallery').innerHTML=g||'<p style="grid-column:1/-1">Photos you add to challenges will appear here.</p>';
 }
@@ -590,13 +595,13 @@ function openMap(){
   let links='';
   const m=currentTab.match(/^q(\d+)$/);
   if(m){const i=+m[1];
-    if(i<8){ if(state.done[i]||(state.revealed||{})[i]) links+=`<a class="btn" href="${dirUrl(COORDS[i+1])}" target="_blank" rel="noopener">Directions to stop ${i+2}</a>`;
-             else links+=`<span class="mapnote" style="width:100%">Finish challenge ${i+1} to unlock directions to stop ${i+2}.</span>`; }
+    if(i<8){ const nx=nextOf(i); if(state.done[i]||(state.revealed||{})[i]) links+=`<a class="btn" href="${dirUrl(COORDS[nx])}" target="_blank" rel="noopener">Directions to stop ${pos(nx)+1}</a>`;
+             else links+=`<span class="mapnote" style="width:100%">Finish challenge ${pos(i)+1} to unlock directions to stop ${pos(nx)+1}.</span>`; }
     else links+=`<span class="mapnote" style="width:100%">You're at the final destination.</span>`;}
   links+=`<a class="btn outline" href="${dirUrl(START)}" target="_blank" rel="noopener">Directions to the tourist office</a>`;
   document.getElementById('mapLinks').innerHTML=links;
   document.getElementById('locList').innerHTML=`<li><a href="${placeUrl(START)}" target="_blank" rel="noopener"><b>Start</b> · Tourist office · ${fmtC(START)}</a></li>`+
-    COORDS.map((c,i)=>`<li><a href="${placeUrl(c)}" target="_blank" rel="noopener"><b>Stop ${i+1}</b>${i===8?' · Final destination (Q9–Q10)':''} · ${fmtC(c)}</a></li>`).join('');
+    ORDER.filter(i=>i<9).map(i=>{const c=COORDS[i]; return `<li><a href="${placeUrl(c)}" target="_blank" rel="noopener"><b>Stop ${pos(i)+1}</b>${i===8?' · Final destination (Q9–Q10)':''} · ${fmtC(c)}</a></li>`;}).join('');
   const o=document.getElementById('mapOverlay'); o.hidden=false; document.getElementById('mapClose').focus();
 }
 function closeMap(){document.getElementById('mapOverlay').hidden=true;document.getElementById('mapBtn').focus();}
@@ -619,11 +624,11 @@ document.addEventListener('click',e=>{
   if(d){const i=d.dataset.done; state.done[i]=!state.done[i]; save();
     d.classList.toggle('on',state.done[i]); d.textContent=state.done[i]?'✓ Challenge done':'Mark as done'; refreshStatus();
     document.getElementById('rc'+i).innerHTML=routeCard(+i);
-    const n=document.getElementById('dl'+(+i+1)); if(n) n.innerHTML=destLost(+i+1);}
+    const nx=nextOf(i), n=document.getElementById('dl'+nx); if(n) n.innerHTML=destLost(nx);}
   const dr=e.target.closest('[data-dest-reveal]');
   if(dr){const i=+dr.dataset.destReveal; state.destRevealed=state.destRevealed||{}; state.destRevealed[i]=true; save(); document.getElementById('dl'+i).innerHTML=destLost(i); return;}
   const r=e.target.closest('[data-reveal]');
-  if(r){const i=r.dataset.reveal; state.revealed=state.revealed||{}; state.revealed[i]=true; save(); document.getElementById('rc'+i).innerHTML=routeCard(+i); const n=document.getElementById('dl'+(+i+1)); if(n) n.innerHTML=destLost(+i+1);}
+  if(r){const i=r.dataset.reveal; state.revealed=state.revealed||{}; state.revealed[i]=true; save(); document.getElementById('rc'+i).innerHTML=routeCard(+i); const nx=nextOf(i), n=document.getElementById('dl'+nx); if(n) n.innerHTML=destLost(nx);}
   const rs=e.target.closest('#reset'); if(rs&&armed(rs,'Start again (clear answers)','Click again to clear everything')){const t=state.team; state=blank(); state.team=t; save(); location.hash='start'; location.reload();}
 });
 document.addEventListener('input',e=>{

@@ -3,7 +3,7 @@
 Emerald Language Learning's Gaillac History Tour quiz.
 
 - **Website:** https://emeraldlanguagelearning.github.io/Emerald-Gaillac-Quiz-Tour/ (GitHub Pages, served from `index.html` at the top of the repo).
-- **Two-team version:** https://emeraldlanguagelearning.github.io/Emerald-Gaillac-Quiz-Tour/two-teams.html (`two-teams.html`). Each team picks Team 1 or Team 2 on its own device (or open `two-teams.html?team=1` / `?team=2`). Same tour, plus 5 rebus puzzles per team; each rebus gives one letter, and the two teams' 10 letters together spell LIBÉRATION.
+- **Two-team version:** https://emeraldlanguagelearning.github.io/Emerald-Gaillac-Quiz-Tour/two-teams.html (`two-teams.html`). Each team picks Team 1 or Team 2 on its own device (or open `two-teams.html?team=1` / `?team=2`). Same tour, plus 5 rebus puzzles per team; each rebus gives one letter, and the two teams' 10 letters together spell LIBÉRATION. The teams walk different routes so they don't cross: Team 1 starts at the quay (original order), Team 2 starts at the old marketplace (stop 5) and goes 5→8, then 1→4; both finish at the tourist office.
 - **Android app:** a WebView around the same `index.html`, copied into the app when the APK is built.
 
 - Every push builds the APK with GitHub Actions: **Actions → Build APK → latest run → Artifacts → GaillacTour-apk**.
