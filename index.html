@@ -327,7 +327,8 @@ function startPanel(){return `
     <div class="challenge-actions"><a class="btn outline" href="${dirUrl(START)}" target="_blank" rel="noopener">Directions to the start</a></div>
     <div class="mapwrap" id="map-start"></div>
     <p class="mapnote">Stops you have visited turn green. Tap any dot to open it in Google Maps.</p></div>
-  <div style="text-align:center"><button class="btn" data-go="q0">Start the tour</button></div>`;}
+  <div style="text-align:center"><button class="btn" data-go="q0">Start the tour</button></div>
+  <p style="text-align:center;margin-top:18px">Playing with two teams? <a href="two-teams.html" style="color:var(--emerald-dark);font-weight:600">Open the two-team version with rebus puzzles</a></p>`;}
 
 function routeCard(i){
   if(i===8) return `<div class="card"><div class="badge">${ICONS.route}</div><div class="kicker">Next</div><h3>Stay where you are</h3><p>Question 10 is right here at the final destination.</p></div>`;
